@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import apiRoutes from './src/routes/api.routes.js';
+import userRoutes from './src/routes/users.routes.js';
+import productRoutes from './src/routes/products.routes.js';
 
 //? Configuración de variables de entorno
 dotenv.config();
@@ -31,4 +32,5 @@ app.get('/', (req, res) => {
 });
 
 //? Rutas del API
-app.use('/Dengo/api', apiRoutes);
+app.use('/api', userRoutes);
+app.use('/api', productRoutes);
