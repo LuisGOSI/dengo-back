@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import userRoutes from './src/routes/users.routes.js';
 import productRoutes from './src/routes/products.routes.js';
 import branchRoutes from './src/routes/branch.routes.js';
+import eventsRoutes from './src/routes/events.routes.js';
 
 //? Configuración de variables de entorno
 dotenv.config();
@@ -35,4 +36,5 @@ app.get('/', (req, res) => {
 //? Rutas del API
 app.use('/api', userRoutes);
 app.use('/api', productRoutes);
-app.use('/api', branchRoutes)
+app.use('/api', branchRoutes);
+app.use('/api', eventsRoutes);
