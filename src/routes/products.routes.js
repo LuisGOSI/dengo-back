@@ -8,7 +8,9 @@ import {
     updateProducto,
     habilitarProducto,
     deshabilitarProducto,
-    deleteProducto
+    deleteProducto,
+    addProductoFavorito,
+    getFavoritosByUsuario
 } from "../controllers/productos.controller.js";
 
 const apiRouter = Router();
@@ -24,6 +26,8 @@ apiRouter.put('/productos/:id', updateProducto);
 apiRouter.patch('/productos/habilitar/:id', habilitarProducto);
 apiRouter.patch('/productos/deshabilitar/:id', deshabilitarProducto);
 apiRouter.delete('/productos/:id', deleteProducto);
+apiRouter.post('/productos/favorito', addProductoFavorito);
+apiRouter.get('/productos/favoritos/:usuario_id', getFavoritosByUsuario);
 // ====================================================================
 
 export default apiRouter;
