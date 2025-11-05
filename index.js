@@ -8,6 +8,7 @@ import productRoutes from './src/routes/products.routes.js';
 import branchRoutes from './src/routes/branch.routes.js';
 import eventsRoutes from './src/routes/events.routes.js';
 import ingredientRoutes from './src/routes/ingredients.routes.js';
+import pedidosRoutes from './src/routes/pedidos.routes.js';
 
 //? Carga de la documentación Swagger
 const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json'));
@@ -47,3 +48,4 @@ app.use('/api', productRoutes);
 app.use('/api', branchRoutes);
 app.use('/api', eventsRoutes);
 app.use('/api', ingredientRoutes);
+app.use('/api', pedidosRoutes);
