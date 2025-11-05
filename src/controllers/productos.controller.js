@@ -349,3 +349,88 @@ export const deleteProducto = async (req, res) => {
         });
     }
 };
+
+//? POST - Asignar producto favorito a un usuario
+export const addProductoFavorito = async (req, res) => {
+    try {
+        const { usuario_id, producto_id, receta_id } = req.body;
+
+        // Validar los campos obligatorios
+        if (!usuario_id || !producto_id) {
+            return res.status(400).json({
+                success: false,
+                error: 'el usario y producto son requeridos'
+            });
+        }
+
+        const nuevoFavorito = {
+            usuario_id,
+            producto_id,
+            receta_id: receta_id || null // si no viene, queda NULL
+        };
+
+        const { data, error } = await supabase
+            .from('favoritos_usuario')
+            .insert([nuevoFavorito])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        res.status(201).json({
+            success: true,
+            message: 'Favorito asignado correctamente',
+            data
+        });
+    } catch (error) {
+        console.error('Error al asignar favorito:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+//? GET - Obtener los productos favoritos de un usuario
+export const getFavoritosByUsuario = async (req, res) => {
+    try {
+        const { usuario_id } = req.params;
+
+        // Selecciona favoritos con datos de producto y receta (si existe)
+        const { data, error } = await supabase
+            .from('favoritos_usuario')
+            .select(`
+                id,
+                producto_id,
+                receta_id,
+                productos:producto_id (
+                    id,
+                    nombre,
+                    precio,
+                    url_imagen
+                ),
+                receta:receta_id (
+                    id,
+                    nombre,
+                    descripcion,
+                    imagen
+                )
+            `)
+            .eq('usuario_id', usuario_id);
+
+        if (error) throw error;
+
+        // Si receta_id es null, la respuesta devuelve "receta": null.
+        res.status(200).json({
+            success: true,
+            data
+        });
+    } catch (error) {
+        console.error('Error al obtener favoritos:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
