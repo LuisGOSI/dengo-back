@@ -37,10 +37,11 @@ const pedidosController = {
                         if (item.producto_id) {
                             const { data: producto } = await supabase
                                 .from('productos')
-                                .select('precio')
+                                .select('precio, nombre')
                                 .eq('id', item.producto_id)
                                 .single();
                             precioUnitario = producto?.precio || 0;
+                            nombre_item = producto?.nombre || "Producto"
                         } 
                     }
 
