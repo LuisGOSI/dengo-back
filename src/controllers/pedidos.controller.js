@@ -229,7 +229,6 @@ const pedidosController = {
             receta:recetas_comunidad (id, nombre, descripcion, imagen)
           ),
           pagos (*),
-          barista:barista_asignado_id (id, nombre, apellidos)
         `)
                 .eq('id', id)
                 .single();
@@ -255,7 +254,7 @@ const pedidosController = {
     actualizarEstadoPedido: async (req, res) => {
         try {
             const { id } = req.params;
-            const { estado, barista_asignado_id, notas } = req.body;
+            const { estado } = req.body;
 
             if (!estado) {
                 return res.status(400).json({ error: 'El estado es requerido' });
@@ -270,10 +269,6 @@ const pedidosController = {
                 estado,
                 actualizado_en: new Date().toISOString()
             };
-
-            if (barista_asignado_id) {
-                updates.barista_asignado_id = barista_asignado_id;
-            }
 
             if (notas) {
                 updates.notas = notas;
