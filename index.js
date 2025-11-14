@@ -23,10 +23,10 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-//? Carga de la documentación Swagger
-const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json'));
+// //? Carga de la documentación Swagger
+// const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json'));
 
-app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
+// app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
 
 //? Rutas de la aplicación
 app.get('/', (req, res) => {
