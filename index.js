@@ -12,14 +12,9 @@ import pedidosRoutes from './src/routes/pedidos.routes.js';
 import pointsRoutes from './src/routes/points.routes.js';
 import salesRoutes from './src/routes/sales.routes.js';
 
-//? Carga de la documentación Swagger
-const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json'));
 
 //? Configuración de variables de entorno
 dotenv.config();
-
-//? Puerto de la aplicación
-const PORT = process.env.PORT || 3000;
 
 //? Iniciación de la aplicación Express
 const app = express();
@@ -27,13 +22,11 @@ const app = express();
 //? Aplicación de middlewares
 app.use(cors());
 app.use(express.json());
+
+//? Carga de la documentación Swagger
+const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json'));
+
 app.use('/api-docs', swaggerUI.serve, swaggerUI.setup(swaggerDocument));
-
-
-//? Inicio del servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});
 
 //? Rutas de la aplicación
 app.get('/', (req, res) => {
