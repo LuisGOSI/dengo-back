@@ -46,3 +46,5 @@ app.use('/api', ingredientRoutes);
 app.use('/api', pedidosRoutes);
 app.use('/api', pointsRoutes)
 app.use('/api', salesRoutes)
+
+export default app;
