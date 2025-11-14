@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { generarPuntos,
+import {
+    generarPuntos,
     rutaPrueba,
     registrarPuntosQR,
- } from "../controllers/points.controller.js";
+} from "../controllers/points.controller.js";
 
 const apiRouter = Router();
 

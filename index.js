@@ -10,6 +10,7 @@ import eventsRoutes from './src/routes/events.routes.js';
 import ingredientRoutes from './src/routes/ingredients.routes.js';
 import pedidosRoutes from './src/routes/pedidos.routes.js';
 import pointsRoutes from './src/routes/points.routes.js';
+import salesRoutes from './src/routes/sales.routes.js';
 
 //? Carga de la documentación Swagger
 const swaggerDocument = JSON.parse(fs.readFileSync('./swagger-output.json'));
@@ -51,3 +52,4 @@ app.use('/api', eventsRoutes);
 app.use('/api', ingredientRoutes);
 app.use('/api', pedidosRoutes);
 app.use('/api', pointsRoutes)
+app.use('/api', salesRoutes)

@@ -42,10 +42,10 @@ const pedidosController = {
                                 .single();
                             precioUnitario = producto?.precio || 0;
                             nombre_item = producto?.nombre || "Producto"
-                        } 
+                        }
                     }
 
-                    if(!nombre_item && item.producto_id){
+                    if (!nombre_item && item.producto_id) {
                         const { data: producto } = await supabase
                             .from('productos')
                             .select('nombre')

@@ -60,7 +60,7 @@ export const rutaPrueba = async (req, res) => {
 };
 
 // POST - Obtener los puntos del usuario
-export const obtnerPuntos = async (req, res) => {
+export const obtenerPuntos = async (req, res) => {
   const { idUsuario } = req.body;
   try {
     const { data, error } = await supabase
