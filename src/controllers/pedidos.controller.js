@@ -42,7 +42,16 @@ const pedidosController = {
                                 .single();
                             precioUnitario = producto?.precio || 0;
                             nombre_item = producto?.nombre || "Producto"
-                        } 
+                        }
+                    }
+
+                    if (!nombre_item && item.producto_id) {
+                        const { data: producto } = await supabase
+                            .from('productos')
+                            .select('nombre')
+                            .eq('id', item.producto_id)
+                            .single();
+                        item.nombre_item = producto?.nombre || 'Producto';
                     }
 
                     const totalItem = precioUnitario * item.cantidad;
