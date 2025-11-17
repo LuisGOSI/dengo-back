@@ -44,36 +44,59 @@ export const generarPuntos = async (req, res) => {
   }
 };
 
-// GET - Ruta de prueba
-export const rutaPrueba = async (req, res) => {
-  try {
-    res.status(200).json({
-      success: true,
-      message: "Hola mundo 🌎 desde la API de Dengo"
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      error: error.message
-    });
-  }
-};
 
 // POST - Obtener los puntos del usuario
 export const obtnerPuntos = async (req, res) => {
-  const { idUsuario } = req.body;
   try {
+    const { idUsuario } = req.body;
+
+    // Validación
+    if (!idUsuario) {
+      return res.status(400).json({
+        success: false,
+        error: "Falta el idUsuario",
+      });
+    }
+
     const { data, error } = await supabase
-      .from('sucursales')
-      .select('*')
-      .order('creado_en', { ascending: true });
+      .from("usuarios")
+      .select(`
+        puntos,
+        visitas,
+        niveles_cuenta (
+          codigo_nivel
+        )
+      `)
+      .eq("id", idUsuario)
+      .single();
 
+    if (error || !data) {
+      return res.status(404).json({
+        success: false,
+        error: "Usuario no encontrado",
+      });
+    }
 
+    const nivelNombre = data.niveles_cuenta?.codigo_nivel || "Desconocido";
 
-  } catch {
+    res.status(200).json({
+      success: true,
+      message: "Puntos obtenidos correctamente",
+      puntos: data.puntos,
+      visitas: data.visitas,
+      nivel: nivelNombre,
+    });
 
+  } catch (error) {
+    console.error("Error al obtener puntos:", error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
+
+
 
 // POST - Guardar puntos del QR en el usuario
 export const registrarPuntosQR = async (req, res) => {

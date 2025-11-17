@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { generarPuntos,
-    rutaPrueba,
+    obtnerPuntos,
     registrarPuntosQR,
  } from "../controllers/points.controller.js";
 
@@ -11,7 +11,7 @@ const apiRouter = Router();
 // ====================================================================
 //? Rutas de puntos
 apiRouter.post('/puntos', generarPuntos);
-apiRouter.get('/puntos', rutaPrueba);
+apiRouter.get('/puntos', obtnerPuntos);
 apiRouter.post('/puntos/registrar', registrarPuntosQR);
 
 // ====================================================================
