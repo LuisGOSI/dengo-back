@@ -48,7 +48,7 @@ export const generarPuntos = async (req, res) => {
 // POST - Obtener los puntos del usuario
 export const obtnerPuntos = async (req, res) => {
   try {
-    const { idUsuario } = req.body;
+    const { idUsuario } = req.query;
 
     // Validación
     if (!idUsuario) {
@@ -110,7 +110,7 @@ export const registrarPuntosQR = async (req, res) => {
       });
     }
 
-    // 1️⃣ Obtener usuario actual
+    //  Obtener usuario actual
     const { data: usuarioActual, error: getError } = await supabase
       .from("usuarios")
       .select("puntos, visitas")
@@ -119,11 +119,11 @@ export const registrarPuntosQR = async (req, res) => {
 
     if (getError || !usuarioActual) throw getError || new Error("Usuario no encontrado");
 
-    // 2️⃣ Calcular nuevos valores
+    // Calcular nuevos valores
     const nuevosPuntos = (usuarioActual.puntos || 0) + puntos;
-    const nuevasVisitas = (usuarioActual.visitas || 0) + 1;
+    const nuevasVisitas = (usuarioActual.visitas || 0) + 1; // remover suma de visitas -------------------------------
 
-    // 3️⃣ Actualizar usuario
+    // Actualizar usuario
     const { data, error } = await supabase
       .from("usuarios")
       .update({
@@ -137,7 +137,7 @@ export const registrarPuntosQR = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "✅ Puntos registrados correctamente",
+      message: "Puntos registrados correctamente",
       nuevosPuntos,
       nuevasVisitas,
     });
