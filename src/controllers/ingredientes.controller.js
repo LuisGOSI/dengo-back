@@ -6,7 +6,11 @@ export const getIngredientes = async (req, res) => {
         const { data, error } = await supabase
             .from('ingredientes')
             .select(`
-                *
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
             `)
             .order('creado_en', { ascending: false });
         if (error) throw error;
@@ -32,7 +36,11 @@ export const getIngredienteById = async (req, res) => {
         const { data, error } = await supabase
             .from('ingredientes')
             .select(`
-                *
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
             `)
             .eq('id', id)
             .single();
@@ -63,7 +71,13 @@ export const getIngredientesActivos = async (req, res) => {
     try {
         const { data, error } = await supabase
             .from('ingredientes')
-            .select('*')
+            .select(`
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
+            `)
             .eq('activo', true)
             .order('creado_en', { ascending: false });
 
@@ -86,40 +100,47 @@ export const getIngredientesActivos = async (req, res) => {
 //? POST - Crear un nuevo ingrediente
 export const createIngrediente = async (req, res) => {
     try {
-    const { nombre, descripcion, tipo} = req.body;
+        const { nombre, descripcion, tipo, id_categoria } = req.body;
 
-    // Validar campos obligatorios
-    if (!nombre || !descripcion || !tipo) {
-        return res.status(400).json({
-        success: false,
-        message: 'Los campos nombre, descripcion y tipo son obligatorios',
+        // Validar campos obligatorios
+        if (!nombre || !descripcion || !tipo) {
+            return res.status(400).json({
+                success: false,
+                message: 'Los campos nombre, descripcion y tipo son obligatorios',
+            });
+        }
+
+        const { data, error } = await supabase
+            .from('ingredientes')
+            .insert([
+                {
+                    nombre,
+                    descripcion,
+                    tipo,
+                    id_categoria: id_categoria || null
+                },
+            ])
+            .select(`
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
+            `);
+
+        if (error) throw error;
+
+        res.status(201).json({
+            success: true,
+            message: 'Ingrediente creado correctamente',
+            data,
         });
-    }
-
-    const { data, error } = await supabase
-        .from('ingredientes')
-        .insert([
-        {
-            nombre,
-            descripcion,
-            tipo
-        },
-        ])
-        .select();
-
-    if (error) throw error;
-
-    res.status(201).json({
-        success: true,
-        message: 'Ingrediente creado correctamente',
-        data,
-    });
     } catch (error) {
-    console.error('Error al crear ingrediente:', error);
-    res.status(500).json({
-        success: false,
-        error: error.message,
-    });
+        console.error('Error al crear ingrediente:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message,
+        });
     }
 };
 
@@ -127,7 +148,7 @@ export const createIngrediente = async (req, res) => {
 export const updateIngrediente = async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion, tipo, activo } = req.body;
+        const { nombre, descripcion, tipo, activo, id_categoria } = req.body;
 
         // Verificar si el ingrediente existe
         const { data: existente, error: errorExistente } = await supabase
@@ -158,6 +179,7 @@ export const updateIngrediente = async (req, res) => {
         if (descripcion !== undefined) updateData.descripcion = descripcion;
         if (tipo !== undefined) updateData.tipo = tipo;
         if (activo !== undefined) updateData.activo = activo;
+        if (id_categoria !== undefined) updateData.id_categoria = id_categoria;
 
         if (Object.keys(updateData).length === 0) {
             return res.status(400).json({
@@ -170,7 +192,13 @@ export const updateIngrediente = async (req, res) => {
             .from('ingredientes')
             .update(updateData)
             .eq('id', id)
-            .select()
+            .select(`
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
+            `)
             .single();
 
         if (error) throw error;
@@ -223,7 +251,13 @@ export const enableIngrediente = async (req, res) => {
             .from('ingredientes')
             .update({ activo: true })
             .eq('id', id)
-            .select()
+            .select(`
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
+            `)
             .single();
 
         if (error) throw error;
@@ -270,6 +304,148 @@ export const deleteIngrediente = async (req, res) => {
         });
     } catch (error) {
         console.error('Error al eliminar ingrediente:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+//? GET - Obtener ingredientes por categoría agrupados por tipo (ACTIVOS)
+export const getIngredientesByCategoria = async (req, res) => {
+    try {
+        const { idCategoria } = req.params;
+
+        // Validar que se proporcione el idCategoria
+        if (!idCategoria) {
+            return res.status(400).json({
+                success: false,
+                error: 'El parámetro idCategoria es obligatorio'
+            });
+        }
+
+        // Obtener ingredientes activos de la categoría específica
+        const { data, error } = await supabase
+            .from('ingredientes')
+            .select(`
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
+            `)
+            .eq('id_categoria', idCategoria)
+            .eq('activo', true)
+            .order('tipo', { ascending: true })
+            .order('nombre', { ascending: true });
+
+        if (error) throw error;
+
+        // Agrupar por tipo
+        const ingredientesAgrupados = data.reduce((acc, ingrediente) => {
+            const tipo = ingrediente.tipo || 'Sin tipo';
+            if (!acc[tipo]) {
+                acc[tipo] = [];
+            }
+            acc[tipo].push(ingrediente);
+            return acc;
+        }, {});
+
+        res.status(200).json({
+            success: true,
+            message: `Ingredientes activos de la categoría ${idCategoria} agrupados por tipo`,
+            data: ingredientesAgrupados,
+            totalIngredientes: data.length,
+            totalTipos: Object.keys(ingredientesAgrupados).length
+        });
+    } catch (error) {
+        console.error('Error al obtener ingredientes por categoría:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+//? GET - Obtener ingredientes por ID de producto (a través de la categoría del producto)
+export const getIngredientesByProducto = async (req, res) => {
+    try {
+        const { idProducto } = req.params;
+
+        // Validar que se proporcione el idProducto
+        if (!idProducto) {
+            return res.status(400).json({
+                success: false,
+                error: 'El parámetro idProducto es obligatorio'
+            });
+        }
+
+        // 1. Obtener el producto y su categoría
+        const { data: producto, error: errorProducto } = await supabase
+            .from('productos')
+            .select(`
+                id,
+                nombre,
+                categoria_id,
+                categorias (
+                    id,
+                    nombre
+                )
+            `)
+            .eq('id', idProducto)
+            .eq('activo', true)
+            .single();
+
+        if (errorProducto) throw errorProducto;
+
+        if (!producto) {
+            return res.status(404).json({
+                success: false,
+                error: 'Producto no encontrado o inactivo'
+            });
+        }
+
+        // 2. Obtener ingredientes activos de la categoría del producto
+        const { data: ingredientes, error: errorIngredientes } = await supabase
+            .from('ingredientes')
+            .select(`
+                *,
+                categorias (
+                    id,
+                    nombre
+                )
+            `)
+            .eq('id_categoria', producto.categoria_id)
+            .eq('activo', true)
+            .order('tipo', { ascending: true })
+            .order('nombre', { ascending: true });
+
+        if (errorIngredientes) throw errorIngredientes;
+
+        // 3. Agrupar por tipo
+        const ingredientesAgrupados = ingredientes.reduce((acc, ingrediente) => {
+            const tipo = ingrediente.tipo || 'Sin tipo';
+            if (!acc[tipo]) {
+                acc[tipo] = [];
+            }
+            acc[tipo].push(ingrediente);
+            return acc;
+        }, {});
+
+        res.status(200).json({
+            success: true,
+            message: `Ingredientes activos para el producto ${producto.nombre}`,
+            producto: {
+                id: producto.id,
+                nombre: producto.nombre,
+                categoria: producto.categorias
+            },
+            data: ingredientesAgrupados,
+            totalIngredientes: ingredientes.length,
+            totalTipos: Object.keys(ingredientesAgrupados).length
+        });
+    } catch (error) {
+        console.error('Error al obtener ingredientes por producto:', error);
         res.status(500).json({
             success: false,
             error: error.message
