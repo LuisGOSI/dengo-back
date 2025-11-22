@@ -23,6 +23,10 @@ const PORT = process.env.PORT || 3000;
 //? Iniciación de la aplicación Express
 const app = express();
 
+//? Middleware para manejar el webhook de Stripe
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
+
 //? Aplicación de middlewares
 app.use(cors());
 app.use(express.json());
@@ -52,4 +56,4 @@ app.use('/api', pedidosRoutes);
 app.use('/api', pointsRoutes)
 app.use('/api', salesRoutes)
 app.use('/api', stripeRoutes);
-app.use('/api',promotionsRoutes);
+app.use('/api', promotionsRoutes);
