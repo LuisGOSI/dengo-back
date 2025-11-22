@@ -9,6 +9,7 @@ import ingredientRoutes from './src/routes/ingredients.routes.js';
 import pedidosRoutes from './src/routes/pedidos.routes.js';
 import pointsRoutes from './src/routes/points.routes.js';
 import salesRoutes from './src/routes/sales.routes.js';
+import stripeRoutes from './src/routes/stripe.routes.js';
 import promotionsRoutes from './src/routes/promotions.routes.js';
 
 //? Carga de la documentación Swagger
@@ -50,4 +51,5 @@ app.use('/api', ingredientRoutes);
 app.use('/api', pedidosRoutes);
 app.use('/api', pointsRoutes)
 app.use('/api', salesRoutes)
+app.use('/api', stripeRoutes);
 app.use('/api',promotionsRoutes);
