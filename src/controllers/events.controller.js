@@ -81,7 +81,8 @@ export const createEvento = async (req, res) => {
       sucursal_id,
       inicia_en,
       termina_en,
-      capacidad
+      capacidad, 
+      img
     } = req.body;
 
     // Validación básica
@@ -100,7 +101,8 @@ export const createEvento = async (req, res) => {
         sucursal_id,
         inicia_en,
         termina_en,
-        capacidad
+        capacidad,
+        img
       }])
       .select()
       .single();
@@ -131,7 +133,8 @@ export const updateEvento = async (req, res) => {
       sucursal_id,
       inicia_en,
       termina_en,
-      capacidad
+      capacidad, 
+      img
     } = req.body;
 
     const updateData = {};
@@ -142,6 +145,7 @@ export const updateEvento = async (req, res) => {
     if (inicia_en !== undefined) updateData.inicia_en = inicia_en;
     if (termina_en !== undefined) updateData.termina_en = termina_en;
     if (capacidad !== undefined) updateData.capacidad = capacidad;
+    if (img !== undefined) updateData.img = img;
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({
