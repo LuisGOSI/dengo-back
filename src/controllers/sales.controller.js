@@ -74,7 +74,6 @@ const ventasController = {
                         ...item,
                         precio_unitario: precioUnitario,
                         nombre_item: nombre_item || 'Producto',
-                        personalizacion_item: item.personalizacion || null,
                     };
                 })
             );
