@@ -13,10 +13,15 @@ const ventasController = {
                 monto_pagado,
                 puntos_usados = 0,
                 descuento_aplicado = 0,
-                notas
+                notas,
+                referencia_transaccion
             } = req.body;
 
-            const referencia_transaccion = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            // Generar referencia si no viene
+            let referenciaTransaccion = referencia_transaccion;
+            if (!referenciaTransaccion) {
+                referenciaTransaccion = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            }
 
             // Validaciones básicas
             if (!sucursal_id) {
@@ -29,8 +34,8 @@ const ventasController = {
 
             // Si se intentan usar puntos, debe haber un usuario
             if (puntos_usados > 0 && !usuario_id) {
-                return res.status(400).json({ 
-                    error: 'Se requiere un usuario registrado para usar puntos' 
+                return res.status(400).json({
+                    error: 'Se requiere un usuario registrado para usar puntos'
                 });
             }
 
@@ -68,7 +73,8 @@ const ventasController = {
                     return {
                         ...item,
                         precio_unitario: precioUnitario,
-                        nombre_item: nombre_item || 'Producto'
+                        nombre_item: nombre_item || 'Producto',
+                        personalizacion_item: item.personalizacion || null,
                     };
                 })
             );
@@ -89,7 +95,7 @@ const ventasController = {
                     .single();
 
                 if (!usuario || usuario.puntos < puntos_usados) {
-                    return res.status(400).json({ 
+                    return res.status(400).json({
                         error: 'El usuario no tiene suficientes puntos',
                         puntos_disponibles: usuario?.puntos || 0,
                         puntos_requeridos: puntos_usados
@@ -111,7 +117,7 @@ const ventasController = {
 
             if (!pedido_id) {
                 const numeroPedido = `VTA-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                
+
                 const { data: nuevoPedido, error: errorPedido } = await supabase
                     .from('pedidos')
                     .insert([{
@@ -181,7 +187,7 @@ const ventasController = {
                     metodo: metodo_pago,
                     monto: monto_pagado || total,
                     cambio: (monto_pagado || total) - total,
-                    referencia_transaccion
+                    referencia_transaccion: referenciaTransaccion
                 }])
                 .select()
                 .single();
@@ -330,7 +336,7 @@ const ventasController = {
             // Filtrar por método de pago si se especifica
             let ventasFiltradas = ventas;
             if (metodo_pago) {
-                ventasFiltradas = ventas.filter(venta => 
+                ventasFiltradas = ventas.filter(venta =>
                     venta.pagos.some(pago => pago.metodo === metodo_pago)
                 );
             }

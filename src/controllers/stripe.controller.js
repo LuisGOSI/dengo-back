@@ -112,44 +112,11 @@ export const stripeWebhook = async (req, res) => {
         case 'payment_intent.succeeded':
             const paymentIntent = event.data.object;
             console.log('PaymentIntent fue exitoso!', paymentIntent.id);
-
-            // Aquí puedes verificar que la venta fue registrada
-            // o registrarla automáticamente si no lo hizo el frontend
-
-            // Opcional: Actualizar estado en BD
-            try {
-                const { error } = await supabase
-                    .from('pagos')
-                    .update({
-                        estado: 'completado',
-                        creado_en: new Date().toISOString()
-                    })
-                    .eq('referencia_transaccion', paymentIntent.id);
-
-                if (error) {
-                    console.error('Error actualizando pago en BD:', error);
-                }
-            } catch (dbError) {
-                console.error('Error con BD en webhook:', dbError);
-            }
             break;
 
         case 'payment_intent.payment_failed':
             const failedPayment = event.data.object;
             console.error('Pago falló:', failedPayment.id);
-
-            // Opcional: Marcar como fallido en BD
-            try {
-                await supabase
-                    .from('pagos')
-                    .update({
-                        estado: 'fallido',
-                        actualizado_en: new Date().toISOString()
-                    })
-                    .eq('referencia_transaccion', failedPayment.id);
-            } catch (dbError) {
-                console.error('Error actualizando pago fallido:', dbError);
-            }
             break;
 
         case 'payment_intent.canceled':
