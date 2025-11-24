@@ -134,6 +134,12 @@ const ventasController = {
                     .eq('id', usuario_id);
             }
 
+            // Estado del pedido
+            let estadoPedido = 'entregado';
+            if (referenciaTransaccion.startsWith('pi')) {
+                estadoPedido = 'recibido'
+            }
+
             // Crear el pedido si no existe
             let pedidoId = pedido_id;
             let pedidoData = null;
@@ -152,7 +158,7 @@ const ventasController = {
                         subtotal,
                         descuentos: descuentoTotal,
                         total,
-                        estado: 'entregado'
+                        estado: estadoPedido
                     }])
                     .select()
                     .single();
