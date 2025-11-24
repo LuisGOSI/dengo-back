@@ -122,7 +122,7 @@ export const stripeWebhook = async (req, res) => {
                     .from('pagos')
                     .update({
                         estado: 'completado',
-                        actualizado_en: new Date().toISOString()
+                        creado_en: new Date().toISOString()
                     })
                     .eq('referencia_transaccion', paymentIntent.id);
 
