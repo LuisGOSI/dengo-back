@@ -279,9 +279,7 @@ const pedidosController = {
                 actualizado_en: new Date().toISOString()
             };
 
-            if (notas) {
-                updates.notas = notas;
-            }
+
 
             const { data: pedido, error } = await supabase
                 .from('pedidos')
