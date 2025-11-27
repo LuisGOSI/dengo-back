@@ -1,4 +1,7 @@
 import { supabase } from "../config/supabase.js";
+import Expo from "expo-server-sdk";
+
+let expo = new Expo();
 
 const pedidosController = {
     // Crear un nuevo pedido
@@ -279,8 +282,6 @@ const pedidosController = {
                 actualizado_en: new Date().toISOString()
             };
 
-
-
             const { data: pedido, error } = await supabase
                 .from('pedidos')
                 .update(updates)
@@ -295,6 +296,53 @@ const pedidosController = {
 
             if (!pedido) {
                 return res.status(404).json({ error: 'Pedido no encontrado' });
+            }
+
+            try {
+                // A. Buscamos el token del usuario dueño del pedido
+                const userId = pedido.usuario_id;
+
+                if (userId) {
+                    const { data: usuarioData, error: userError } = await supabase
+                        .from('usuarios')
+                        .select('expo_push_token')
+                        .eq('id', userId)
+                        .single();
+
+                    // B. Si encontramos usuario y tiene token, enviamos la notificación
+                    if (!userError && usuarioData?.expo_push_token) {
+
+                        if (Expo.isExpoPushToken(usuarioData.expo_push_token)) {
+
+                            // Mensajes personalizados según el estado (Opcional)
+                            let titulo = 'Actualización de pedido! ';
+                            let cuerpo = `Tu pedido ahora está: ${estado}`;
+
+                            if (estado === 'preparando') {
+                                titulo = '¡Tu pedido está en preparación!';
+                                cuerpo = 'Estamos preparando tu pedido.';
+                            } else if (estado === 'listo') {
+                                titulo = '¡Tu pedido está listo!';
+                                cuerpo = 'Ya puedes pasar a recogerlo.';
+                            } else if (estado === 'cancelado') {
+                                titulo = 'Hemos cancelado tu pedido';
+                            }
+
+                            await expo.sendPushNotificationsAsync([{
+                                to: usuarioData.expo_push_token,
+                                sound: 'default',
+                                title: titulo,
+                                body: cuerpo,
+                                data: { pedidoId: id, pantalla: 'DetallePedido' }, // Datos extra para navegar al dar click
+                            }]);
+
+                            console.log(`Notificación enviada al usuario ${userId}`);
+                        }
+                    }
+                }
+            } catch (notifError) {
+                // Importante: No detenemos la respuesta si falla la notificación, solo lo logueamos
+                console.error('Error enviando notificación (el pedido sí se actualizó):', notifError);
             }
 
             res.json({
