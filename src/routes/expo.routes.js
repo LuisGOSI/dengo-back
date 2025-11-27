@@ -1,5 +1,5 @@
 import { Router } from "express";
-import expo_controller from "../controllers/expo.controller";
+import expo_controller from "../controllers/expo.controller.js";
 
 const appRouter = Router();
 

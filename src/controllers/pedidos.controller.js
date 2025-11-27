@@ -1,7 +1,7 @@
 import { supabase } from "../config/supabase.js";
-import Expo from "expo-server-sdk";
+import { Expo } from "expo-server-sdk";
 
-let expo = new Expo();
+const expo = new Expo();
 
 const pedidosController = {
     // Crear un nuevo pedido
