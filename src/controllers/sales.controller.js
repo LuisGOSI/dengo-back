@@ -135,7 +135,7 @@ const ventasController = {
             }
 
             // Estado del pedido
-            let estadoPedido = 'entregado';
+            let estadoPedido = 'preparando';
             if (referenciaTransaccion.startsWith('pi')) {
                 estadoPedido = 'recibido'
             }
