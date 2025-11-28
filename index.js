@@ -12,6 +12,7 @@ import salesRoutes from './src/routes/sales.routes.js';
 import stripeRoutes from './src/routes/stripe.routes.js';
 import promotionsRoutes from './src/routes/promotions.routes.js';
 import expoRoutes from './src/routes/expo.routes.js';
+import communityRoutes from './src/routes/community.routes.js';
 
 //? Carga de la documentación Swagger
 
@@ -59,5 +60,8 @@ app.use('/api', salesRoutes)
 app.use('/api', stripeRoutes);
 app.use('/api', promotionsRoutes);
 app.use('/api', expoRoutes);
+app.use('/api', communityRoutes);
+
+
 
 
