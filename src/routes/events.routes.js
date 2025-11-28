@@ -7,7 +7,8 @@ import {
   deleteEvento,
   getEventosBySucursal,
   confirmarAsistencia,
-  getEventosPorUsuario
+  getEventosPorUsuario,
+  cancelarAsistencia
 } from "../controllers/events.controller.js";
 
 const apiRouter = Router();
@@ -22,6 +23,7 @@ apiRouter.delete('/eventos/:id', deleteEvento);
 apiRouter.get('/eventos/sucursal/:sucursal_id', getEventosBySucursal);
 apiRouter.post('/eventos/confirmar-asistencia', confirmarAsistencia);
 apiRouter.get('/eventos/usuario/:usuario_id', getEventosPorUsuario);
+apiRouter.delete('/eventos/cancelar-asistencia', cancelarAsistencia);
 // ====================================================================
 
 export default apiRouter;

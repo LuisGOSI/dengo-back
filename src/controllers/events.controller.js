@@ -334,3 +334,40 @@ export const getEventosPorUsuario = async (req, res) => {
     });
   }
 };
+
+//? DELETE - Cancelar asistencia a un evento
+export const cancelarAsistencia = async (req, res) => {
+  try {
+    const { evento_id, usuario_id } = req.body;
+    if (!evento_id || !usuario_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faltan datos obligatorios'
+      });
+    }
+    const { data, error } = await supabase
+      .from('registros_eventos')
+      .delete()
+      .eq('evento_id', evento_id)
+      .eq('usuario_id', usuario_id)
+      .select()
+      .single();
+    if (error) throw error;
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        error: 'Registro de asistencia no encontrado'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Asistencia cancelada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al cancelar asistencia:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
