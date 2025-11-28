@@ -434,3 +434,34 @@ export const getFavoritosByUsuario = async (req, res) => {
     }
 };
 
+//? POST - Eliminar un favorito de un usuario
+export const deleteFavoritoById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { data, error } = await supabase
+            .from('favoritos_usuario')
+            .delete()
+            .eq('id', id)
+            .select()
+            .single();
+        if (error) throw error;
+
+        if (!data) {
+            return res.status(404).json({
+                success: false,
+                error: 'Favorito no encontrado'
+            });
+        }
+        res.status(200).json({
+            success: true,
+            message: 'Favorito eliminado correctamente'
+        });
+    } catch (error) {
+        console.error('Error al eliminar favorito:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message
+        });
+    }
+};
+
