@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getCommunityFeed, getMyCreations, createCreation, deleteCreation, aprobarCreation, getPendingCreations, rechazarCreation } from "../controllers/community.controller";
+import { getCommunityFeed, getMyCreations, createCreation, deleteCreation, aprobarCreation, getPendingCreations, rechazarCreation } from "../controllers/community.controller.js";
 
 const apiRouter = Router();
 
@@ -14,3 +14,5 @@ apiRouter.post('/comunidad/aprobar', aprobarCreation);
 apiRouter.get('/comunidad/pendientes', getPendingCreations);
 apiRouter.post('/comunidad/rechazar', rechazarCreation);
 // ====================================================================
+
+export default apiRouter;
