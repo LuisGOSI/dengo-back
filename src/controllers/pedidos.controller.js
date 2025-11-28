@@ -356,11 +356,11 @@ const pedidosController = {
         }
     },
 
-    // Obtener pedidos por usuario
+    // Obtener pedidos por usuario (sin paginación, devuelve todos)
     obtenerPedidosPorUsuario: async (req, res) => {
         try {
             const { usuario_id } = req.params;
-            const { estado, pagina = 1, por_pagina = 10 } = req.query;
+            const { estado } = req.query;
 
             let query = supabase
                 .from('pedidos')
@@ -369,7 +369,7 @@ const pedidosController = {
           sucursales (id, nombre, direccion),
           items_pedido (*),
           pagos (*)
-        `, { count: 'exact' })
+        `)
                 .eq('usuario_id', usuario_id)
                 .order('creado_en', { ascending: false });
 
@@ -377,24 +377,14 @@ const pedidosController = {
                 query = query.eq('estado', estado);
             }
 
-            const desde = (pagina - 1) * por_pagina;
-            const hasta = desde + por_pagina - 1;
-
-            const { data: pedidos, error, count } = await query.range(desde, hasta);
+            const { data: pedidos, error } = await query;
 
             if (error) {
                 console.error('Error obteniendo pedidos del usuario:', error);
                 return res.status(500).json({ error: 'Error al obtener los pedidos' });
             }
 
-            res.json({
-                pedidos,
-                paginacion: {
-                    pagina: parseInt(pagina),
-                    por_pagina: parseInt(por_pagina),
-                    total: count
-                }
-            });
+            res.json({ pedidos });
 
         } catch (error) {
             console.error('Error en obtenerPedidosPorUsuario:', error);
