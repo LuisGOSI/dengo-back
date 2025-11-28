@@ -299,3 +299,38 @@ export const confirmarAsistencia = async (req, res) => {
     });
   }
 };
+
+//? GET - Obtener eventos a los que un usuario ha confirmado asistencia
+export const getEventosPorUsuario = async (req, res) => {
+  try {
+    const { usuario_id } = req.params;
+    if (!usuario_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Falta el ID de usuario'
+      });
+    }
+    const { data, error } = await supabase
+      .from('registros_eventos')
+      .select(`
+        *,
+        eventos:evento_id (
+          *,
+          sucursales:sucursal_id (id, nombre, direccion, activa)
+        )
+      `)
+      .eq('usuario_id', usuario_id)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('Error al obtener eventos por usuario:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
