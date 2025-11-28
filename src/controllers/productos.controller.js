@@ -437,7 +437,7 @@ export const getFavoritosByUsuario = async (req, res) => {
 //? POST - Eliminar un favorito de un usuario
 export const deleteFavoritoById = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.body;
         const { data, error } = await supabase
             .from('favoritos_usuario')
             .delete()
