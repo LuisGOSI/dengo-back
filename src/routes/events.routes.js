@@ -19,11 +19,11 @@ apiRouter.get('/eventos', getEventos);
 apiRouter.get('/eventos/:id', getEventoById);
 apiRouter.post('/eventos', createEvento);
 apiRouter.put('/eventos/:id', updateEvento);
+apiRouter.delete('/eventos/cancelar-asistencia', cancelarAsistencia);
 apiRouter.delete('/eventos/:id', deleteEvento);
 apiRouter.get('/eventos/sucursal/:sucursal_id', getEventosBySucursal);
 apiRouter.post('/eventos/confirmar-asistencia', confirmarAsistencia);
 apiRouter.get('/eventos/usuario/:usuario_id', getEventosPorUsuario);
-apiRouter.delete('/eventos/cancelar-asistencia', cancelarAsistencia);
 // ====================================================================
 
 export default apiRouter;
