@@ -320,7 +320,6 @@ export const getEventosPorUsuario = async (req, res) => {
         )
       `)
       .eq('usuario_id', usuario_id)
-      .order('created_at', { ascending: false });
     if (error) throw error;
     res.status(200).json({
       success: true,
