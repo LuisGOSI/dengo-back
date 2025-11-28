@@ -51,7 +51,7 @@ export const createCreation = async (req, res) => {
                 nombre,
                 descripcion,
                 imagen, // URL de la imagen o base seleccionada
-                estado: 'aprobado' // Para pruebas lo dejamos aprobado directo, luego puedes poner 'pendiente'
+                estado: 'pendiente' // Para pruebas lo dejamos aprobado directo, luego puedes poner 'pendiente'
             }])
             .select()
             .single();
