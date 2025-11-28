@@ -10,6 +10,7 @@ export const getProductos = async (req, res) => {
                 categorias:categoria_id(id, nombre),
                 creador:creado_por(id, nombre, email)
             `)
+            .eq('activo', true)
             .eq('eliminado', false)
             .order('creado_en', { ascending: false });
 
