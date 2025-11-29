@@ -10,7 +10,8 @@ import {
     deshabilitarProducto,
     deleteProducto,
     addProductoFavorito,
-    getFavoritosByUsuario
+    getFavoritosByUsuario,
+    deleteFavoritoById
 } from "../controllers/productos.controller.js";
 
 const apiRouter = Router();
@@ -28,6 +29,7 @@ apiRouter.patch('/productos/deshabilitar/:id', deshabilitarProducto);
 apiRouter.delete('/productos/:id', deleteProducto);
 apiRouter.post('/productos/favorito', addProductoFavorito);
 apiRouter.get('/productos/favoritos/:usuario_id', getFavoritosByUsuario);
+apiRouter.delete('/productos/favorito/eliminar', deleteFavoritoById);
 // ====================================================================
 
 export default apiRouter;
