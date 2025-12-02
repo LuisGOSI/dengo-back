@@ -1,6 +1,25 @@
+<<<<<<< Updated upstream
 var express = require('express');
 var cors = require('cors');
 var dotenv = require('dotenv');
+=======
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import userRoutes from './src/routes/users.routes.js';
+import productRoutes from './src/routes/products.routes.js';
+import branchRoutes from './src/routes/branch.routes.js';
+import eventsRoutes from './src/routes/events.routes.js';
+import ingredientRoutes from './src/routes/ingredients.routes.js';
+import pedidosRoutes from './src/routes/pedidos.routes.js';
+import pointsRoutes from './src/routes/points.routes.js';
+import salesRoutes from './src/routes/sales.routes.js';
+import stripeRoutes from './src/routes/stripe.routes.js';
+import promotionsRoutes from './src/routes/promotions.routes.js';
+import expoRoutes from './src/routes/expo.routes.js';
+import communityRoutes from './src/routes/community.routes.js';
+import categoryRoutes from './src/routes/category.routes.js';
+>>>>>>> Stashed changes
 
 dotenv.config();
 
@@ -21,6 +40,25 @@ app.get('/', (req, res) => {
     });
 });
 
+<<<<<<< Updated upstream
+=======
+//? Rutas del API
+app.use('/api', userRoutes);
+app.use('/api', productRoutes);
+app.use('/api', branchRoutes);
+app.use('/api', eventsRoutes);
+app.use('/api', ingredientRoutes);
+app.use('/api', pedidosRoutes);
+app.use('/api', pointsRoutes)
+app.use('/api', salesRoutes)
+app.use('/api', stripeRoutes);
+app.use('/api', promotionsRoutes);
+app.use('/api', expoRoutes);
+app.use('/api', communityRoutes);
+app.use('/api', categoryRoutes);
+
+
+>>>>>>> Stashed changes
 
 //* Inicio del servidor
 app.listen(PORT, () => {
