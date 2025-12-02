@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getCommunityFeed, getMyCreations, createCreation, deleteCreation, aprobarCreation, getPendingCreations, rechazarCreation } from "../controllers/community.controller.js";
+import { getCommunityFeed, getMyCreations, createCreation, deleteCreation, aprobarCreation, getPendingCreations, rechazarCreation, getCommunityRecipeById } from "../controllers/community.controller.js";
 
 const apiRouter = Router();
 
@@ -7,6 +7,7 @@ const apiRouter = Router();
 // ====================================================================
 //? Rutas de comunidad
 apiRouter.get('/comunidad/feed', getCommunityFeed);
+apiRouter.get('/comunidad/receta/:recipe_id', getCommunityRecipeById);
 apiRouter.get('/comunidad/usuario/:usuario_id', getMyCreations);
 apiRouter.post('/comunidad', createCreation);
 apiRouter.post('/comunidad/eliminar', deleteCreation); // Usamos POST para eliminar con body
