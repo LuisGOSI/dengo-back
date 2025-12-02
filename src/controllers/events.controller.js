@@ -71,7 +71,6 @@ export const getEventoById = async (req, res) => {
   }
 };
 
-
 //? POST - Crear un nuevo evento
 export const createEvento = async (req, res) => {
   try {
@@ -81,7 +80,7 @@ export const createEvento = async (req, res) => {
       sucursal_id,
       inicia_en,
       termina_en,
-      capacidad, 
+      capacidad,
       img
     } = req.body;
 
@@ -133,7 +132,7 @@ export const updateEvento = async (req, res) => {
       sucursal_id,
       inicia_en,
       termina_en,
-      capacidad, 
+      capacidad,
       img
     } = req.body;
 
@@ -254,3 +253,120 @@ export const getEventosBySucursal = async (req, res) => {
   }
 };
 
+//? POST - Confirmar asistencia a un evento
+export const confirmarAsistencia = async (req, res) => {
+  try {
+    const { evento_id, usuario_id } = req.body;
+    if (!evento_id || !usuario_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faltan datos obligatorios'
+      });
+    }
+    // Verificar si ya confirmó asistencia
+    const { data: asistenciaExistente, error: existenciaError } = await supabase
+      .from('registros_eventos')
+      .select('*')
+      .eq('evento_id', evento_id)
+      .eq('usuario_id', usuario_id)
+      .single();
+    if (existenciaError && existenciaError.code !== 'PGRST116') {
+      throw existenciaError;
+    }
+    if (asistenciaExistente) {
+      return res.status(400).json({
+        success: false,
+        error: 'El usuario ya confirmó asistencia a este evento'
+      });
+    }
+    // Insertar registro de asistencia
+    const { data, error } = await supabase
+      .from('registros_eventos')
+      .insert([{ evento_id, usuario_id, estado: 'registrado' }])
+      .select()
+      .single();
+    if (error) throw error;
+    res.status(201).json({
+      success: true,
+      message: 'Asistencia confirmada exitosamente',
+      data
+    });
+  } catch (error) {
+    console.error('Error al confirmar asistencia:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+//? GET - Obtener eventos a los que un usuario ha confirmado asistencia
+export const getEventosPorUsuario = async (req, res) => {
+  try {
+    const { usuario_id } = req.params;
+    if (!usuario_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Falta el ID de usuario'
+      });
+    }
+    const { data, error } = await supabase
+      .from('registros_eventos')
+      .select(`
+        *,
+        eventos:evento_id (
+          *,
+          sucursales:sucursal_id (id, nombre, direccion, activa)
+        )
+      `)
+      .eq('usuario_id', usuario_id)
+    if (error) throw error;
+    res.status(200).json({
+      success: true,
+      data
+    });
+  } catch (error) {
+    console.error('Error al obtener eventos por usuario:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};
+
+//? DELETE - Cancelar asistencia a un evento
+export const cancelarAsistencia = async (req, res) => {
+  try {
+    const { evento_id, usuario_id } = req.body;
+    if (!evento_id || !usuario_id) {
+      return res.status(400).json({
+        success: false,
+        error: 'Faltan datos obligatorios'
+      });
+    }
+    const { data, error } = await supabase
+      .from('registros_eventos')
+      .delete()
+      .eq('evento_id', evento_id)
+      .eq('usuario_id', usuario_id)
+      .select()
+      .single();
+    if (error) throw error;
+    if (!data) {
+      return res.status(404).json({
+        success: false,
+        error: 'Registro de asistencia no encontrado'
+      });
+    }
+    res.status(200).json({
+      success: true,
+      message: 'Asistencia cancelada exitosamente'
+    });
+  } catch (error) {
+    console.error('Error al cancelar asistencia:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message
+    });
+  }
+};

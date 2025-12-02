@@ -1,4 +1,7 @@
 import { supabase } from "../config/supabase.js";
+import { Expo } from "expo-server-sdk";
+
+const expo = new Expo();
 
 const pedidosController = {
     // Crear un nuevo pedido
@@ -279,8 +282,6 @@ const pedidosController = {
                 actualizado_en: new Date().toISOString()
             };
 
-
-
             const { data: pedido, error } = await supabase
                 .from('pedidos')
                 .update(updates)
@@ -297,6 +298,53 @@ const pedidosController = {
                 return res.status(404).json({ error: 'Pedido no encontrado' });
             }
 
+            try {
+                // A. Buscamos el token del usuario dueño del pedido
+                const userId = pedido.usuario_id;
+
+                if (userId) {
+                    const { data: usuarioData, error: userError } = await supabase
+                        .from('usuarios')
+                        .select('expo_push_token')
+                        .eq('id', userId)
+                        .single();
+
+                    // B. Si encontramos usuario y tiene token, enviamos la notificación
+                    if (!userError && usuarioData?.expo_push_token) {
+
+                        if (Expo.isExpoPushToken(usuarioData.expo_push_token)) {
+
+                            // Mensajes personalizados según el estado (Opcional)
+                            let titulo = 'Actualización de pedido! ';
+                            let cuerpo = `Tu pedido ahora está: ${estado}`;
+
+                            if (estado === 'preparando') {
+                                titulo = '¡Tu pedido está en preparación!';
+                                cuerpo = 'Estamos preparando tu pedido.';
+                            } else if (estado === 'listo') {
+                                titulo = '¡Tu pedido está listo!';
+                                cuerpo = 'Ya puedes pasar a recogerlo.';
+                            } else if (estado === 'cancelado') {
+                                titulo = 'Hemos cancelado tu pedido';
+                            }
+
+                            await expo.sendPushNotificationsAsync([{
+                                to: usuarioData.expo_push_token,
+                                sound: 'default',
+                                title: titulo,
+                                body: cuerpo,
+                                data: { pedidoId: id, pantalla: 'DetallePedido' }, // Datos extra para navegar al dar click
+                            }]);
+
+                            console.log(`Notificación enviada al usuario ${userId}`);
+                        }
+                    }
+                }
+            } catch (notifError) {
+                // Importante: No detenemos la respuesta si falla la notificación, solo lo logueamos
+                console.error('Error enviando notificación (el pedido sí se actualizó):', notifError);
+            }
+
             res.json({
                 mensaje: 'Estado del pedido actualizado exitosamente',
                 pedido
@@ -308,11 +356,11 @@ const pedidosController = {
         }
     },
 
-    // Obtener pedidos por usuario
+    // Obtener pedidos por usuario (sin paginación, devuelve todos)
     obtenerPedidosPorUsuario: async (req, res) => {
         try {
             const { usuario_id } = req.params;
-            const { estado, pagina = 1, por_pagina = 10 } = req.query;
+            const { estado } = req.query;
 
             let query = supabase
                 .from('pedidos')
@@ -321,7 +369,7 @@ const pedidosController = {
           sucursales (id, nombre, direccion),
           items_pedido (*),
           pagos (*)
-        `, { count: 'exact' })
+        `)
                 .eq('usuario_id', usuario_id)
                 .order('creado_en', { ascending: false });
 
@@ -329,24 +377,14 @@ const pedidosController = {
                 query = query.eq('estado', estado);
             }
 
-            const desde = (pagina - 1) * por_pagina;
-            const hasta = desde + por_pagina - 1;
-
-            const { data: pedidos, error, count } = await query.range(desde, hasta);
+            const { data: pedidos, error } = await query;
 
             if (error) {
                 console.error('Error obteniendo pedidos del usuario:', error);
                 return res.status(500).json({ error: 'Error al obtener los pedidos' });
             }
 
-            res.json({
-                pedidos,
-                paginacion: {
-                    pagina: parseInt(pagina),
-                    por_pagina: parseInt(por_pagina),
-                    total: count
-                }
-            });
+            res.json({ pedidos });
 
         } catch (error) {
             console.error('Error en obtenerPedidosPorUsuario:', error);

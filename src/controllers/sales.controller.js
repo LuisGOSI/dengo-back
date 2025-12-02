@@ -8,15 +8,20 @@ const ventasController = {
                 pedido_id,
                 sucursal_id,
                 usuario_id = null, // Puede ser null para clientes no registrados
-                items,
+                items, // 
                 metodo_pago = 'tarjeta', // Por defecto 'tarjeta'
-                monto_pagado,
+                monto_pagado, // Monto entregado por el cliente
                 puntos_usados = 0,
                 descuento_aplicado = 0,
-                notas
+                notas = null, // Notas adicionales
+                referencia_transaccion
             } = req.body;
 
-            const referencia_transaccion = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            // Generar referencia si no viene
+            let referenciaTransaccion = referencia_transaccion;
+            if (!referenciaTransaccion) {
+                referenciaTransaccion = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+            }
 
             // Validaciones básicas
             if (!sucursal_id) {
@@ -27,17 +32,41 @@ const ventasController = {
                 return res.status(400).json({ error: 'La venta debe tener al menos un item' });
             }
 
+            if (monto_pagado === undefined || monto_pagado === null) {
+                return res.status(400).json({ error: 'El monto pagado es requerido' });
+            }
+
             // Si se intentan usar puntos, debe haber un usuario
             if (puntos_usados > 0 && !usuario_id) {
-                return res.status(400).json({ 
-                    error: 'Se requiere un usuario registrado para usar puntos' 
+                return res.status(400).json({
+                    error: 'Se requiere un usuario registrado para usar puntos'
                 });
             }
+
+            // Validar y preparar items
+            const itemsValidados = items.map(item => {
+                let personalizacion = item.personalizacion;
+
+                // Si viene como string, parsearlo
+                if (typeof personalizacion === 'string') {
+                    try {
+                        personalizacion = JSON.parse(personalizacion);
+                    } catch (e) {
+                        console.warn('Error parseando personalización:', e);
+                        personalizacion = null;
+                    }
+                }
+
+                return {
+                    ...item,
+                    personalizacion: personalizacion || null
+                };
+            });
 
             // Calcular subtotal de items
             let subtotal = 0;
             const itemsConPrecio = await Promise.all(
-                items.map(async (item) => {
+                itemsValidados.map(async (item) => {
                     let precioUnitario = item.precio_unitario;
                     let nombre_item = item.nombre_item;
 
@@ -68,10 +97,10 @@ const ventasController = {
                     return {
                         ...item,
                         precio_unitario: precioUnitario,
-                        nombre_item: nombre_item || 'Producto'
+                        nombre_item: nombre_item || 'Producto',
                     };
                 })
-            );
+            )
 
             // Calcular descuento por puntos (1 punto = 1 peso)
             const descuentoPorPuntos = puntos_usados;
@@ -89,7 +118,7 @@ const ventasController = {
                     .single();
 
                 if (!usuario || usuario.puntos < puntos_usados) {
-                    return res.status(400).json({ 
+                    return res.status(400).json({
                         error: 'El usuario no tiene suficientes puntos',
                         puntos_disponibles: usuario?.puntos || 0,
                         puntos_requeridos: puntos_usados
@@ -105,13 +134,19 @@ const ventasController = {
                     .eq('id', usuario_id);
             }
 
+            // Estado del pedido
+            let estadoPedido = 'preparando';
+            if (referenciaTransaccion.startsWith('pi')) {
+                estadoPedido = 'recibido'
+            }
+
             // Crear el pedido si no existe
             let pedidoId = pedido_id;
             let pedidoData = null;
 
             if (!pedido_id) {
                 const numeroPedido = `VTA-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-                
+
                 const { data: nuevoPedido, error: errorPedido } = await supabase
                     .from('pedidos')
                     .insert([{
@@ -123,7 +158,7 @@ const ventasController = {
                         subtotal,
                         descuentos: descuentoTotal,
                         total,
-                        estado: 'entregado'
+                        estado: estadoPedido
                     }])
                     .select()
                     .single();
@@ -138,8 +173,12 @@ const ventasController = {
 
                 // Crear items del pedido
                 const itemsConPedidoId = itemsConPrecio.map(item => ({
-                    ...item,
-                    pedido_id: pedidoId
+                    pedido_id: pedidoId,
+                    producto_id: item.producto_id,
+                    cantidad: item.cantidad,
+                    precio_unitario: item.precio_unitario,
+                    nombre_item: item.nombre_item,
+                    personalizacion: item.personalizacion
                 }));
 
                 const { error: errorItems } = await supabase
@@ -177,11 +216,11 @@ const ventasController = {
                 .from('pagos')
                 .insert([{
                     pedido_id: pedidoId,
-                    pagado_por_usuario_id: usuario_id, // Puede ser null
+                    pagado_por_usuario_id: usuario_id,
                     metodo: metodo_pago,
-                    monto: monto_pagado || total,
-                    cambio: (monto_pagado || total) - total,
-                    referencia_transaccion
+                    monto: monto_pagado,
+                    cambio: Math.max(0, monto_pagado - total),
+                    referencia_transaccion: referenciaTransaccion
                 }])
                 .select()
                 .single();
@@ -254,12 +293,9 @@ const ventasController = {
                 mensaje: 'Venta registrada exitosamente',
                 venta: ventaCompleta,
                 puntos_usados: puntos_usados,
-                //  El frontend debe llamar a /api/puntos con el total
-                // instrucciones_qr: {
-                //     mensaje: 'Llamar a POST /api/puntos con el total de la venta',
-                //     endpoint: '/api/puntos/generar',
-                //     body: { total: total }
-                // }
+                descuento_aplicado: descuento_aplicado,
+                monto_pagado: monto_pagado,
+                cambio: Math.max(0, monto_pagado - total)
             });
 
         } catch (error) {
@@ -330,7 +366,7 @@ const ventasController = {
             // Filtrar por método de pago si se especifica
             let ventasFiltradas = ventas;
             if (metodo_pago) {
-                ventasFiltradas = ventas.filter(venta => 
+                ventasFiltradas = ventas.filter(venta =>
                     venta.pagos.some(pago => pago.metodo === metodo_pago)
                 );
             }

@@ -5,7 +5,10 @@ import {
   createEvento,
   updateEvento,
   deleteEvento,
-  getEventosBySucursal
+  getEventosBySucursal,
+  confirmarAsistencia,
+  getEventosPorUsuario,
+  cancelarAsistencia
 } from "../controllers/events.controller.js";
 
 const apiRouter = Router();
@@ -16,8 +19,11 @@ apiRouter.get('/eventos', getEventos);
 apiRouter.get('/eventos/:id', getEventoById);
 apiRouter.post('/eventos', createEvento);
 apiRouter.put('/eventos/:id', updateEvento);
+apiRouter.delete('/eventos/cancelar-asistencia', cancelarAsistencia);
 apiRouter.delete('/eventos/:id', deleteEvento);
 apiRouter.get('/eventos/sucursal/:sucursal_id', getEventosBySucursal);
+apiRouter.post('/eventos/confirmar-asistencia', confirmarAsistencia);
+apiRouter.get('/eventos/usuario/:usuario_id', getEventosPorUsuario);
 // ====================================================================
 
 export default apiRouter;

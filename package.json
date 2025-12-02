@@ -15,9 +15,11 @@
     "@supabase/supabase-js": "^2.76.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "expo-server-sdk": "^4.0.0",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
     "qrcode": "^1.5.4",
+    "stripe": "^20.0.0",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
