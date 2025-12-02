@@ -1,8 +1,6 @@
-<<<<<<< Updated upstream
-var express = require('express');
-var cors = require('cors');
-var dotenv = require('dotenv');
-=======
+
+
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -18,20 +16,36 @@ import stripeRoutes from './src/routes/stripe.routes.js';
 import promotionsRoutes from './src/routes/promotions.routes.js';
 import expoRoutes from './src/routes/expo.routes.js';
 import communityRoutes from './src/routes/community.routes.js';
-import categoryRoutes from './src/routes/category.routes.js';
->>>>>>> Stashed changes
 
+import categoryRoutes from './src/routes/category.routes.js';
+
+
+//? Carga de la documentación Swagger
+
+//? Configuración de variables de entorno
 dotenv.config();
 
-//* Iniciación de la aplicación Express
-const app = express();
+//? Puerto de la aplicación
 const PORT = process.env.PORT || 3000;
 
-//* Aplicación de middlewares
+//? Iniciación de la aplicación Express
+const app = express();
+
+//? Middleware para manejar el webhook de Stripe
+app.use('/api/stripe/webhook', express.raw({ type: 'application/json' }));
+
+
+//? Aplicación de middlewares
 app.use(cors());
 app.use(express.json());
 
-//* Rutas de la aplicación
+
+//? Inicio del servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
+//? Rutas de la aplicación
 app.get('/', (req, res) => {
     res.json({
         message: 'El api de Dengo está funcionando correctamente.',
@@ -40,8 +54,6 @@ app.get('/', (req, res) => {
     });
 });
 
-<<<<<<< Updated upstream
-=======
 //? Rutas del API
 app.use('/api', userRoutes);
 app.use('/api', productRoutes);
@@ -58,9 +70,3 @@ app.use('/api', communityRoutes);
 app.use('/api', categoryRoutes);
 
 
->>>>>>> Stashed changes
-
-//* Inicio del servidor
-app.listen(PORT, () => {
-    console.log(`Servidor corriendo en http://localhost:${PORT}`);
-});

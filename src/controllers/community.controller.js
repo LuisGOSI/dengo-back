@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabase } from '../config/supabase.js'; 
 
 // GET: Obtener feed de la comunidad (solo aprobados o públicos)
 export const getCommunityFeed = async (req, res) => {
