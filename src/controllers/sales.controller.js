@@ -230,21 +230,26 @@ const ventasController = {
                 return res.status(500).json({ error: 'Error al registrar el pago' });
             }
 
-            // Actualizar visitas si hay usuario
+            // Calcular puntos a ganar (15% del total)
+            const puntosGanados = Math.floor(total * 0.15)
+
+            // Actualizar visitas y puntos si hay usuario
             if (usuario_id) {
                 const { data: usuario } = await supabase
                     .from('usuarios')
-                    .select('visitas, nivel_id')
+                    .select('visitas, nivel_id, puntos')
                     .eq('id', usuario_id)
                     .single();
 
                 if (usuario) {
                     const nuevasVisitas = usuario.visitas + 1;
+                    const nuevosPuntos = (usuario.puntos || 0) + puntosGanados;
 
                     await supabase
                         .from('usuarios')
                         .update({
-                            visitas: nuevasVisitas
+                            visitas: nuevasVisitas,
+                            puntos: nuevosPuntos
                         })
                         .eq('id', usuario_id);
 
@@ -292,6 +297,7 @@ const ventasController = {
             res.status(201).json({
                 mensaje: 'Venta registrada exitosamente',
                 venta: ventaCompleta,
+                puntos_ganados: puntosGanados,
                 puntos_usados: puntos_usados,
                 descuento_aplicado: descuento_aplicado,
                 monto_pagado: monto_pagado,
