@@ -17,6 +17,25 @@ export const getCommunityFeed = async (req, res) => {
     }
 };
 
+export const getCommunityRecipeById = async (req, res) => {
+    const { recipe_id } = req.params;
+
+    try {
+        const { data, error } = await supabase
+            .from('recetas_comunidad')
+            .select('*, usuarios(nombre)')
+            .eq('id', recipe_id)
+            .eq('estado', 'aprobado') // Solo recetas aprobadas
+            .order('creado_en', { ascending: false });
+
+        if (error) throw error;
+
+        res.status(200).json({ success: true, data });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+}
+
 // GET: Obtener mis creaciones
 export const getMyCreations = async (req, res) => {
     const { usuario_id } = req.params;
@@ -37,21 +56,50 @@ export const getMyCreations = async (req, res) => {
 
 // POST: Crear nueva receta
 export const createCreation = async (req, res) => {
-    const { usuario_id, nombre, descripcion, imagen } = req.body;
-
-    if (!usuario_id || !nombre || !descripcion) {
-        return res.status(400).json({ success: false, error: 'Faltan datos' });
-    }
 
     try {
+
+        const {
+            nombre,
+            descripcion,    
+            usuario_id,
+            tamano,
+            imagen,
+            categoria_id,
+        } = req.body;
+
+        if (!usuario_id || !nombre || !descripcion || !tamano || !categoria_id) {
+            return res.status(400).json({ success: false, error: 'Faltan datos' });
+        }
+
+        const precio = tamano === 'pequeño' ? 30 : tamano === 'mediano' ? 40 : 50;
+
+        const { data: productData, error: productError } = await supabase
+            .from('productos')
+            .insert([{
+                nombre,
+                descripcion,
+                precio,
+                url_imagen: imagen,
+                categoria_id,
+                creado_por: usuario_id,
+                tipo_pro: 'comunidad',
+                activo: false
+            }])
+            .select()
+            .single();
+        
+        if (productError) throw productError;
+
         const { data, error } = await supabase
             .from('recetas_comunidad')
             .insert([{
+                id: productData.id, // Usamos el mismo ID que el producto creado
                 usuario_id,
                 nombre,
                 descripcion,
                 imagen, // URL de la imagen o base seleccionada
-                estado: 'pendiente' // Para pruebas lo dejamos aprobado directo, luego puedes poner 'pendiente'
+                estado: 'pendiente', // Para pruebas lo dejamos aprobado directo, luego puedes poner 'pendiente'
             }])
             .select()
             .single();

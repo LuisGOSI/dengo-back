@@ -1,3 +1,6 @@
+
+
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -13,6 +16,9 @@ import stripeRoutes from './src/routes/stripe.routes.js';
 import promotionsRoutes from './src/routes/promotions.routes.js';
 import expoRoutes from './src/routes/expo.routes.js';
 import communityRoutes from './src/routes/community.routes.js';
+
+import categoryRoutes from './src/routes/category.routes.js';
+
 
 //? Carga de la documentación Swagger
 
@@ -61,7 +67,6 @@ app.use('/api', stripeRoutes);
 app.use('/api', promotionsRoutes);
 app.use('/api', expoRoutes);
 app.use('/api', communityRoutes);
-
-
+app.use('/api', categoryRoutes);
 
 

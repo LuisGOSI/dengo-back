@@ -12,6 +12,7 @@ export const getProductos = async (req, res) => {
             `)
             .eq('activo', true)
             .eq('eliminado', false)
+            .eq('tipo_pro', 'admin')
             .order('creado_en', { ascending: false });
 
         if (error) throw error;
